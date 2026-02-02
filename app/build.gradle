@@ -4,32 +4,18 @@ apply plugin: 'com.android.application'
 // keystore.properties file, in the rootProject folder.
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 
-// Initialize a new Properties() object called keystoreProperties.
-def keystoreProperties = new Properties()
-
-// Load your keystore.properties file into the keystoreProperties object.
-keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-
 android {
-    compileSdkVersion 28
+    namespace "com.virb3.trustmealready"
+    compileSdk 34
     defaultConfig {
         applicationId "com.virb3.trustmealready"
-        minSdkVersion 15
-        targetSdkVersion 28
+        minSdk 21
+        targetSdk 34
         versionCode 3
         versionName "1.11"
     }
-    signingConfigs {
-        release {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
-        }
-    }
     buildTypes {
         release {
-            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
