@@ -77,7 +77,12 @@ jobs:
           mkdir -p dist
           cp app/build/outputs/apk/debug/app-debug.apk dist/TrustMeAlready-debug.apk
           release_apk="$(find app/build/outputs/apk/release -maxdepth 1 -name '*.apk' | head -n 1)"
-          cp "${release_apk}" dist/TrustMeAlready-release.apk
+          if "${ANDROID_HOME}/build-tools/36.0.0/apksigner" verify --verbose "${release_apk}"; then
+            cp "${release_apk}" dist/TrustMeAlready-release.apk
+          else
+            cp "${release_apk}" dist/TrustMeAlready-release-unsigned.apk
+            echo "Release signing secrets are not configured; uploaded release APK is unsigned."
+          fi
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v7
@@ -86,15 +91,28 @@ jobs:
           path: dist/TrustMeAlready-debug.apk
 
       - name: Upload release APK
+        if: hashFiles('dist/TrustMeAlready-release.apk') != ''
         uses: actions/upload-artifact@v7
         with:
           name: TrustMeAlready-release
           path: dist/TrustMeAlready-release.apk
+
+      - name: Upload unsigned release APK
+        if: hashFiles('dist/TrustMeAlready-release-unsigned.apk') != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: TrustMeAlready-release-unsigned
+          path: dist/TrustMeAlready-release-unsigned.apk
 
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload "${GITHUB_REF_NAME}" dist/*.apk --clobber \
-            || gh release create "${GITHUB_REF_NAME}" dist/*.apk --generate-notes
+          if [[ ! -f dist/TrustMeAlready-release.apk ]]; then
+            echo "Refusing to publish a GitHub Release without a signed release APK." >&2
+            echo "Configure KEYSTORE, STORE_PASSWORD, and KEY_PASSWORD repository secrets." >&2
+            exit 1
+          fi
+          gh release upload "${GITHUB_REF_NAME}" dist/TrustMeAlready-debug.apk dist/TrustMeAlready-release.apk --clobber \
+            || gh release create "${GITHUB_REF_NAME}" dist/TrustMeAlready-debug.apk dist/TrustMeAlready-release.apk --generate-notes
