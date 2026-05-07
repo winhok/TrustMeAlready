@@ -21,8 +21,8 @@ android {
         applicationId = "com.virb3.trustmealready"
         minSdk = 21
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.12"
+        versionCode = 5
+        versionName = "1.20"
     }
     signingConfigs {
         release {
