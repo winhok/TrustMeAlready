@@ -3,22 +3,49 @@ apply plugin: 'com.android.application'
 // Create a variable called keystorePropertiesFile, and initialize it to your
 // keystore.properties file, in the rootProject folder.
 def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+def hasReleaseSigning = keystorePropertiesFile.exists()
+if (hasReleaseSigning) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
 
 android {
-    namespace "com.virb3.trustmealready"
-    compileSdk 34
+    namespace = "com.virb3.trustmealready"
+    enableKotlin = false
+    compileSdk {
+        version = release(36) {
+            it.minorApiLevel = 1
+        }
+    }
     defaultConfig {
-        applicationId "com.virb3.trustmealready"
-        minSdk 21
-        targetSdk 34
-        versionCode 4
-        versionName "1.12"
+        applicationId = "com.virb3.trustmealready"
+        minSdk = 21
+        targetSdk = 36
+        versionCode = 4
+        versionName = "1.12"
+    }
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile = file(keystoreProperties['storeFile'])
+                storePassword = keystoreProperties['storePassword']
+                keyAlias = keystoreProperties['keyAlias']
+                keyPassword = keystoreProperties['keyPassword']
+            }
+        }
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled = true
+            shrinkResources = true
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.release
+            }
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+    lint {
+        lintConfig = file("lint.xml")
     }
 }
 
@@ -26,4 +53,3 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     compileOnly 'de.robv.android.xposed:api:82'
 }
-

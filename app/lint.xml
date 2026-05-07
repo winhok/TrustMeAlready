@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!-- Intentional for this Xposed module: the product bypasses TLS trust checks. -->
+    <issue id="BadHostnameVerifier" severity="ignore" />
+    <issue id="CustomX509TrustManager" severity="ignore" />
+    <issue id="TrustAllX509TrustManager" severity="ignore" />
+
+    <!-- Intentional for this Xposed module: Conscrypt internals are hooked reflectively. -->
+    <issue id="PrivateApi" severity="ignore" />
+
+    <!-- The SDK/toolchain is pinned to the latest stable AGP 9.2-compatible line. -->
+    <issue id="AndroidGradlePluginVersion" severity="ignore" />
+    <issue id="GradleDependency" severity="ignore" />
+    <issue id="OldTargetApi" severity="ignore" />
+
+    <!-- The API 24 trust manager is only selected behind an SDK_INT check. -->
+    <issue id="UseRequiresApi" severity="ignore" />
+</lint>
